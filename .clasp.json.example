@@ -1,0 +1,16 @@
+{
+  "scriptId": "",
+  "rootDir": "public",
+  "projectId": "y",
+  "scriptExtensions": [
+    ".js",
+    ".gs"
+  ],
+  "htmlExtensions": [
+    ".html"
+  ],
+  "jsonExtensions": [
+    ".json"
+  ],
+  "filePushOrder": []
+}

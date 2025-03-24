@@ -1,0 +1,6 @@
+*.clasp.json*
+node_modules
+
+!src/*
+!public/*
+!.clasp.json.example

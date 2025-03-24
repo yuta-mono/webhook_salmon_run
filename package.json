@@ -1,0 +1,13 @@
+{
+  "devDependencies": {
+    "esbuild": "^0.25.1",
+    "esbuild-gas-plugin": "^0.9.0"
+  },
+  "scripts": {
+    "pull": "clasp pull",
+    "push": "clasp push",
+    "open": "clasp open-script",
+    "dev": "cp -f .clasp.json.dev .clasp.json",
+    "prod": "cp -f .clasp.json.prod .clasp.json"
+  }
+}
