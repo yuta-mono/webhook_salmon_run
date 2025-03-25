@@ -237,10 +237,10 @@ function createShiftImage(schedule)
       [weaponsBlob],
     ],
     outputWidth: 300,
+    outputFilename: imageFilename,
   };
 
   // Driveに画像を保存
-  imgObj.outputFilename = formatDate(schedule.start_time, 'YYYYMMDDTHHmmss');
   const imageBlob = ImgApp.editImage(imgObj);
   file = tmpFolder.createFile(imageBlob);
   return file.getId();
