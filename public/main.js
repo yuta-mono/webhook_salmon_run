@@ -5,33 +5,37 @@
 const scheduleUrl = "https://spla3.yuu26.com/api/coop-grouping/schedule";
 // 次のスケジュールのみ取得するURL
 const nextUrl = "https://spla3.yuu26.com/api/coop-grouping/next";
+// GoogleDriveURL
+const driveUrl = "http://drive.google.com/uc?export=view&id=";
+
 // 環境変数からWebhookのURLとUserAgentを取得
 const discordWebhookUrl = PropertiesService.getScriptProperties().getProperty('discordWebhookUrl');
 const userAgent = PropertiesService.getScriptProperties().getProperty('userAgent');
+
 // 表示するシフト数(1~5)
 const shiftCount = 5;
 
 // アイコンセット
 const objUser = {
   "name" : "クマサン商会",
-  "url" : "http://drive.google.com/uc?export=view&id=1hOQ7Uv6tbtmjJbAex_M4Kiqypd8a9PZl",
+  "fileID" : "1hOQ7Uv6tbtmjJbAex_M4Kiqypd8a9PZl",
 };
 const objBigRun = {
   "name" : "ビッグラン！！！",
-  "url" : "http://drive.google.com/uc?export=view&id=1L3aiSa4bpE6Y8hIPqkYTacFKnd7OAm02",
+  "fileID" : "1L3aiSa4bpE6Y8hIPqkYTacFKnd7OAm02",
 };
 const objBosses = {
   "ヨコヅナ" : {
-    "url" : "http://drive.google.com/uc?export=view&id=1V_HqfPc4trhKq61qXVMY8OjSHnkU4qeS",
+    "fileID" : "1V_HqfPc4trhKq61qXVMY8OjSHnkU4qeS",
   },
   "タツ" : {
-    "url" : "http://drive.google.com/uc?export=view&id=1Ktk1Ae5zq7m7rq8KF5ZTWMk3LD31aFca",
+    "fileID" : "1Ktk1Ae5zq7m7rq8KF5ZTWMk3LD31aFca",
   },
   "ジョー" : {
-    "url" : "http://drive.google.com/uc?export=view&id=137CkCOR_khOaOce3JXQVJhh41S9mOclA",
+    "fileID" : "137CkCOR_khOaOce3JXQVJhh41S9mOclA",
   },
   "オカシラ連合" : {
-    "url" : "http://drive.google.com/uc?export=view&id=1v4PLCsp8RzouR4ChTF0Q-9z18Rc3Ahf5",
+    "fileID" : "1v4PLCsp8RzouR4ChTF0Q-9z18Rc3Ahf5",
   },
 };
 
@@ -127,7 +131,7 @@ function postSchedule()
   const colorBigRun = 0xFFD700;
   const templateMessage = {
     "username": objUser.name,
-    "avatar_url": objUser.url,
+    "avatar_url": driveUrl + objUser.fileID,
     "embeds": [],
   };
   const templateEmbed = {
@@ -157,7 +161,7 @@ function postSchedule()
     // ステージ＆オカシラ情報
     embed.author = {
       "name": schedule.stage.name + "\n" + schedule.boss.name,
-      "icon_url": objBosses[schedule.boss.name].url,
+      "icon_url": driveUrl + objBosses[schedule.boss.name].fileID,
     };
     embed.thumbnail = {
       "url": schedule.stage.image,
@@ -178,7 +182,7 @@ function postSchedule()
       embed.color = colorBigRun;
       embed.author = {
         "name": objBigRun.name + "\n" + schedule.stage.name + "\n" + schedule.boss.name,
-        "icon_url": objBigRun.url
+        "icon_url": driveUrl + objBigRun.fileID
       };
     }
   }
