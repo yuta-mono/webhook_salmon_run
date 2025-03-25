@@ -26,6 +26,15 @@
       }
     ]
   },
+  "oauthScopes": [
+    "https://www.googleapis.com/auth/drive",
+    "https://www.googleapis.com/auth/drive.appdata",
+    "https://www.googleapis.com/auth/drive.apps.readonly",
+    "https://www.googleapis.com/auth/drive.file",
+    "https://www.googleapis.com/auth/script.external_request",
+    "https://www.googleapis.com/auth/presentations",
+    "https://www.googleapis.com/auth/script.scriptapp"
+  ],
   "exceptionLogging": "STACKDRIVER",
   "runtimeVersion": "V8"
 }
