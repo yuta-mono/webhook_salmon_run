@@ -17,13 +17,24 @@ GAS(GoogleAppsScript)上で動作します。
 1. [Apps Script](https://script.google.com/home)にアクセスします。
 1. 「新しいプロジェクト」をクリックします。
 1. エディタ画面が開くので、[main.js](public/main.js)の内容をコピーして貼り付けます。
-1. dayjsライブラリを追加\
-「ライブラリ」クリック→以下のライブラリIDを入力します。\
-`1ShsRhHc8tgPy5wGOzUvgEhOedJUQD53m-gd8lG2MOgs-dXC_aCZn9lFB`
-1. 環境変数（プロパティ）を設定\
-「プロジェクトの設定」を開き、画面下部の「スクリプト プロパティ」欄に以下を追加します。\
+
+### ライブラリを追加
+1. 「ライブラリ」クリック→以下のライブラリIDを入力します。\
+   - dayjsライブラリ\
+   `1ShsRhHc8tgPy5wGOzUvgEhOedJUQD53m-gd8lG2MOgs-dXC_aCZn9lFB`
+   - [ImgAppライブラリ](https://github.com/tanaikech/ImgApp)\
+   `1T03nYHRho6XMWYcaumClcWr6ble65mAT8OLJqRFJ5lukPVogAN2NDl-y`
+
+### サービスを追加
+1. 「サービス」クリック→以下のサービスを選択します。\
+    - Google Slides API
+    - Drive API
+
+### 環境変数（プロパティ）を設定
+1. 「プロジェクトの設定」を開き、画面下部の「スクリプト プロパティ」欄に以下を追加します。\
     - プロパティ名：`discordWebhookUrl`　値：（Webhookの設定でコピーしたURL）
     - プロパティ名：`userAgent`　値：（自分の連絡先）※例：`discordWebhook(X@user_name)`
+    - プロパティ名：`folderID`　値：（GoogleDriveのフォルダーのID）※共有している必要があります
 
 ### トリガーの設定
 1. 「トリガー」を開き、「トリガーを追加」をクリックします。
@@ -44,5 +55,6 @@ https://spla3.yuu26.com/ を使わせてもらってます。\
 急に使えなくなるかもしれませんのでご留意ください。
 
 ## ブキ編成の画像について
-未実装\
-いずれ実装するかもしれません。
+追加実装しました。
+ブキごとに画像サイズが異なるので少し崩れてます。
+調整検討中

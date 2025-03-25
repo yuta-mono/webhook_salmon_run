@@ -8,9 +8,12 @@ const nextUrl = "https://spla3.yuu26.com/api/coop-grouping/next";
 // GoogleDriveURL
 const driveUrl = "http://drive.google.com/uc?export=view&id=";
 
-// 環境変数からWebhookのURLとUserAgentを取得
+// 環境変数からパラメータを取得
 const discordWebhookUrl = PropertiesService.getScriptProperties().getProperty('discordWebhookUrl');
 const userAgent = PropertiesService.getScriptProperties().getProperty('userAgent');
+const folderID = PropertiesService.getScriptProperties().getProperty('folderID');
+// 保存先フォルダ
+const tmpFolder = DriveApp.getFolderById(folderID);
 
 // 表示するシフト数(1~5)
 const shiftCount = 5;
@@ -142,6 +145,9 @@ function postSchedule()
     "thumbnail": {
       "url": null
     },
+    "image": {
+      "url": null
+    },
     "fields": [],
   };
 
@@ -150,6 +156,7 @@ function postSchedule()
   const message = JSON.parse(JSON.stringify(templateMessage));
   let schedule;
   let embed;
+  let fileId;
   // シフトごとにembedを生成
   for (let i = 0; i < limit; i++) {
     schedule = schedules[i];
@@ -165,9 +172,6 @@ function postSchedule()
       "name": schedule.stage.name + "\n" + schedule.boss.name,
       "icon_url": driveUrl + objBosses[schedule.boss.name].fileID,
     };
-    embed.thumbnail = {
-      "url": schedule.stage.image,
-    };
     // ブキ編成
     schedule.weapons.forEach(weapon => {
       embed.fields.push({
@@ -176,6 +180,9 @@ function postSchedule()
         "inline" : false,
       });
     });
+    // 画像生成
+    fileId = createShiftImage(schedule);
+    embed.image.url = driveUrl + fileId;
 
     // ビッグランの場合、authorと色をビッグラン仕様に変更
     if (schedule.is_big_run) {
@@ -190,6 +197,55 @@ function postSchedule()
   }
 
   postToDiscord(message);
+}
+
+// シフト画像生成処理
+function createShiftImage(schedule)
+{
+  let file;
+  const imageFilename = formatDate(schedule.start_time, 'YYYYMMDDTHHmmss');
+  // 既に生成済の画像があればそれを返す
+  const files = tmpFolder.getFilesByName(imageFilename);
+  while (files.hasNext()) {
+    file = files.next();
+    return file.getId();
+  }
+
+  // ブキ画像取得
+  let response;
+  let weaponBlob;
+  let weaponBlobs = [];
+  schedule.weapons.forEach(weapon => {
+    response = UrlFetchApp.fetch(weapon.image);
+    weaponBlob = response.getBlob();
+    weaponBlobs.push(weaponBlob);
+  });
+  // ブキ画像を結合
+  const weaponsObj = {
+    merge: [
+      weaponBlobs,
+    ],
+    outputWidth: 800,
+  };
+  const weaponsBlob = ImgApp.editImage(weaponsObj);
+
+  // ステージ画像とブキ画像を結合
+  response = UrlFetchApp.fetch(schedule.stage.image);
+  const stageBlob = response.getBlob();
+  // ステージとブキ画像を結合
+  const imgObj = {
+    merge: [
+      [stageBlob],
+      [weaponsBlob],
+    ],
+    outputWidth: 300,
+    outputFilename: imageFilename,
+  };
+
+  // Driveに画像を保存
+  const imageBlob = ImgApp.editImage(imgObj);
+  file = tmpFolder.createFile(imageBlob);
+  return file.getId();
 }
 
 // 時間帯を取得
