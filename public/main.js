@@ -175,8 +175,6 @@ function postSchedule()
       });
     });
 
-    message.embeds.push(embed);
-
     // ビッグランの場合、authorと色をビッグラン仕様に変更
     if (schedule.is_big_run) {
       embed.color = colorBigRun;
@@ -185,6 +183,8 @@ function postSchedule()
         "icon_url": driveUrl + objBigRun.fileID
       };
     }
+
+    message.embeds.push(embed);
   }
 
   postToDiscord(message);
