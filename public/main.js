@@ -8,9 +8,13 @@ const nextUrl = "https://spla3.yuu26.com/api/coop-grouping/next";
 // GoogleDriveURL
 const driveUrl = "http://drive.google.com/uc?export=view&id=";
 
-// 環境変数からWebhookのURLとUserAgentを取得
+// 環境変数からパラメータを取得
 const discordWebhookUrl = PropertiesService.getScriptProperties().getProperty('discordWebhookUrl');
 const userAgent = PropertiesService.getScriptProperties().getProperty('userAgent');
+const folderID = PropertiesService.getScriptProperties().getProperty('folderID');
+
+// 保存先フォルダ
+let tmpFolder;
 
 // 表示するシフト数(1~5)
 const shiftCount = 5;
@@ -81,12 +85,14 @@ function main()
     // ロックを取得しようとする。10秒でタイムアウトを設定。
     if (lock.tryLock(10000)) {
       console.log('スクリプトをロック中です。');
+      createTemporaryFolder();
 
       // 投稿
       postSchedule();
 
       // main関数のトリガーを削除
       deleteMainTrigger();
+      removeTemporaryFolder();
     } else {
       console.log('スクリプトは既に実行中です。');
     }
@@ -140,6 +146,9 @@ function postSchedule()
     "thumbnail": {
       "url": null
     },
+    "image": {
+      "url": null
+    },
     "fields": [],
   };
 
@@ -148,6 +157,7 @@ function postSchedule()
   const message = JSON.parse(JSON.stringify(templateMessage));
   let schedule;
   let embed;
+  let fileId;
   // シフトごとにembedを生成
   for (let i = 0; i < limit; i++) {
     schedule = schedules[i];
@@ -163,17 +173,10 @@ function postSchedule()
       "name": schedule.stage.name + "\n" + schedule.boss.name,
       "icon_url": driveUrl + objBosses[schedule.boss.name].fileID,
     };
-    embed.thumbnail = {
-      "url": schedule.stage.image,
-    };
-    // ブキ編成
-    schedule.weapons.forEach(weapon => {
-      embed.fields.push({
-        "name" : weapon.name,
-        "value" : "",
-        "inline" : false,
-      });
-    });
+
+    // 画像生成
+    fileId = createShiftImage(schedule);
+    embed.image.url = driveUrl + fileId;
 
     message.embeds.push(embed);
 
@@ -188,6 +191,61 @@ function postSchedule()
   }
 
   postToDiscord(message);
+}
+
+// 一時フォルダ生成
+function createTemporaryFolder()
+{
+  // 自分の公開フォルダに一時フォルダを作成する
+  let publicFolder = DriveApp.getFolderById(folderID);
+  tmpFolder = publicFolder.createFolder(ScriptApp.getScriptId());
+}
+
+// 一時フォルダ削除
+function removeTemporaryFolder()
+{
+  if (tmpFolder !== null) {
+    tmpFolder.setTrashed(true);
+  }
+}
+
+// シフト画像生成処理
+function createShiftImage(schedule)
+{
+  // ブキ画像取得
+  let response;
+  let weaponBlob;
+  let weaponBlobs = [];
+  schedule.weapons.forEach(weapon => {
+    response = UrlFetchApp.fetch(weapon.image);
+    weaponBlob = response.getBlob();
+    weaponBlobs.push(weaponBlob);
+  });
+  // ブキ画像を結合
+  const weaponsObj = {
+    merge: [
+      weaponBlobs,
+    ],
+    outputWidth: 800,
+  };
+  const weaponsBlob = ImgApp.editImage(weaponsObj);
+
+  // ステージ画像とブキ画像を結合
+  response = UrlFetchApp.fetch(schedule.stage.image);
+  const stageBlob = response.getBlob();
+  // ステージとブキ画像を結合
+  const imgObj = {
+    merge: [
+      [stageBlob],
+      [weaponsBlob],
+    ],
+    outputWidth: 300,
+  };
+
+  // Driveに画像を保存
+  const imageBlob = ImgApp.editImage(imgObj);
+  const file = tmpFolder.createFile(imageBlob);
+  return file.getId();
 }
 
 // 時間帯を取得
