@@ -12,9 +12,8 @@ const driveUrl = "http://drive.google.com/uc?export=view&id=";
 const discordWebhookUrl = PropertiesService.getScriptProperties().getProperty('discordWebhookUrl');
 const userAgent = PropertiesService.getScriptProperties().getProperty('userAgent');
 const folderID = PropertiesService.getScriptProperties().getProperty('folderID');
-
 // 保存先フォルダ
-let tmpFolder;
+const tmpFolder = DriveApp.getFolderById(folderID);
 
 // 表示するシフト数(1~5)
 const shiftCount = 5;
@@ -85,14 +84,12 @@ function main()
     // ロックを取得しようとする。10秒でタイムアウトを設定。
     if (lock.tryLock(10000)) {
       console.log('スクリプトをロック中です。');
-      createTemporaryFolder();
 
       // 投稿
       postSchedule();
 
       // main関数のトリガーを削除
       deleteMainTrigger();
-      removeTemporaryFolder();
     } else {
       console.log('スクリプトは既に実行中です。');
     }
@@ -173,7 +170,14 @@ function postSchedule()
       "name": schedule.stage.name + "\n" + schedule.boss.name,
       "icon_url": driveUrl + objBosses[schedule.boss.name].fileID,
     };
-
+    // ブキ編成
+    schedule.weapons.forEach(weapon => {
+      embed.fields.push({
+        "name" : weapon.name,
+        "value" : "",
+        "inline" : false,
+      });
+    });
     // 画像生成
     fileId = createShiftImage(schedule);
     embed.image.url = driveUrl + fileId;
@@ -193,25 +197,18 @@ function postSchedule()
   postToDiscord(message);
 }
 
-// 一時フォルダ生成
-function createTemporaryFolder()
-{
-  // 自分の公開フォルダに一時フォルダを作成する
-  let publicFolder = DriveApp.getFolderById(folderID);
-  tmpFolder = publicFolder.createFolder(ScriptApp.getScriptId());
-}
-
-// 一時フォルダ削除
-function removeTemporaryFolder()
-{
-  if (tmpFolder !== null) {
-    tmpFolder.setTrashed(true);
-  }
-}
-
 // シフト画像生成処理
 function createShiftImage(schedule)
 {
+  let file;
+  const imageFilename = formatDate(schedule.start_time, 'YYYYMMDDTHHmmss');
+  // 既に生成済の画像があればそれを返す
+  const files = tmpFolder.getFilesByName(imageFilename);
+  while (files.hasNext()) {
+    file = files.next();
+    return file.getId();
+  }
+
   // ブキ画像取得
   let response;
   let weaponBlob;
@@ -243,8 +240,9 @@ function createShiftImage(schedule)
   };
 
   // Driveに画像を保存
+  imgObj.outputFilename = formatDate(schedule.start_time, 'YYYYMMDDTHHmmss');
   const imageBlob = ImgApp.editImage(imgObj);
-  const file = tmpFolder.createFile(imageBlob);
+  file = tmpFolder.createFile(imageBlob);
   return file.getId();
 }
 
