@@ -60,8 +60,6 @@ function setTrigger()
   // 次回シフトのトリガーがなければトリガーを生成する
   const next = (getSchedule(nextUrl))[0];
   const time = new Date(next.start_time);
-  // スケジュール更新直後だと４つ先のシフトを取得できないので少しズラす
-  time.setMinutes(time.getMinutes() + 3);
   console.log("トリガーセット：" + time.toString());
   ScriptApp.newTrigger('main').timeBased().at(time).create();
 }
